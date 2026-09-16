@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skill Sentinel — CWI skill linter + security scanner</title>
+<meta name="description" content="Paste a SKILL.md, AGENTS.md, or subagent frontmatter. Get an A–F grade with evidence-bound security and quality findings. Runs 100% locally.">
+<meta property="og:title" content="Skill Sentinel — CWI">
+<meta property="og:description" content="Linter + security scanner for AI agent skills. A–F grades, evidence-bound findings, machine-readable reports.">
+<script src="https://cumulativewebinc.github.io/cwi-i18n/i18n.js" data-app="skill-sentinel"></script>
+<script src="./scanner.js"></script>
+<style>
+  :root { --bg:#0b0b10; --panel:#14141c; --line:#26262f; --gold:#e3b93c; --gold-dim:#9a7c26;
+          --ink:#f2f0e8; --mut:#a7a49a; --crit:#ff5d5d; --err:#ff9f43; --warn:#e3b93c; --info:#7cc7ff; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  .wrap { max-width:880px; margin:0 auto; padding:20px 16px 64px; }
+  header.brand { display:flex; align-items:center; gap:12px; padding:8px 0 4px; }
+  .mark { width:40px; height:40px; border-radius:50%; border:2px solid var(--gold);
+          display:flex; align-items:center; justify-content:center; font-weight:800; color:var(--gold); }
+  h1 { font-size:22px; margin:0; }
+  .sub { color:var(--mut); font-size:14px; margin:2px 0 0; }
+  .hero { background:var(--panel); border:1px solid var(--line); border-radius:14px;
+          padding:18px; margin:18px 0; }
+  textarea { width:100%; min-height:220px; background:#0e0e14; color:var(--ink);
+             border:1px solid var(--line); border-radius:10px; padding:12px;
+             font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:13px; }
+  .row { display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
+  button { cursor:pointer; border-radius:10px; border:1px solid var(--gold-dim);
+           background:var(--gold); color:#141414; font-weight:700; padding:12px 18px; font-size:15px; }
+  button.ghost { background:transparent; color:var(--gold); border:1px solid var(--gold-dim); }
+  button.small { padding:8px 12px; font-size:13px; }
+  .drop { border:1px dashed var(--line); border-radius:10px; padding:10px; margin-top:10px;
+          color:var(--mut); font-size:13px; text-align:center; }
+  #results { display:none; margin-top:18px; }
+  .grade-card { display:flex; align-items:center; gap:18px; background:var(--panel);
+                border:1px solid var(--line); border-radius:14px; padding:18px; }
+  .grade-letter { font-size:64px; font-weight:900; width:96px; height:96px; border-radius:16px;
+                  display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+  .gA { background:#123f22; color:#4ade80; } .gB { background:#1d3a5f; color:#7cc7ff; }
+  .gC { background:#4a3a10; color:var(--warn); } .gD { background:#4a2410; color:var(--err); }
+  .gF { background:#4a1212; color:var(--crit); }
+  .scorebar { height:10px; background:#0e0e14; border-radius:6px; overflow:hidden; margin-top:8px; }
+  .scorebar > div { height:100%; background:var(--gold); }
+  .chips { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .chip { font-size:12px; padding:4px 10px; border-radius:20px; border:1px solid var(--line); color:var(--mut); }
+  .finding { background:var(--panel); border:1px solid var(--line); border-left-width:5px;
+             border-radius:10px; padding:14px; margin-top:10px; }
+  .f-critical { border-left-color:var(--crit); } .f-error { border-left-color:var(--err); }
+  .f-warning { border-left-color:var(--warn); } .f-info { border-left-color:var(--info); }
+  .fhead { display:flex; flex-wrap:wrap; gap:8px; align-items:baseline; }
+  .fid { font-family:ui-monospace,Menlo,monospace; font-size:12px; color:var(--mut); }
+  .sev { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.06em;
+         padding:3px 8px; border-radius:6px; }
+  .sev.critical { background:#4a1212; color:var(--crit); } .sev.error { background:#4a2c10; color:var(--err); }
+  .sev.warning { background:#4a3a10; color:var(--warn); } .sev.info { background:#1d3a5f; color:var(--info); }
+  .ftitle { font-weight:700; }
+  .fline { color:var(--mut); font-size:12px; }
+  .fmatch { font-family:ui-monospace,Menlo,monospace; font-size:12px; background:#0e0e14;
+            border:1px solid var(--line); border-radius:6px; padding:8px; margin:8px 0;
+            overflow-x:auto; white-space:pre-wrap; word-break:break-word; }
+  .ffix { font-size:13px; color:var(--mut); } .ffix b { color:var(--ink); }
+  .honest { margin-top:22px; font-size:13px; color:var(--mut); background:var(--panel);
+            border:1px solid var(--line); border-radius:10px; padding:14px; }
+  .empty-ok { background:var(--panel); border:1px solid var(--line); border-radius:14px;
+              padding:26px; text-align:center; margin-top:10px; }
+  footer { margin-top:36px; color:var(--mut); font-size:12px; text-align:center; }
+  footer a { color:var(--gold); }
+  pre#jsonout { display:none; background:#0e0e14; border:1px solid var(--line); border-radius:10px;
+                padding:12px; font-size:12px; overflow-x:auto; max-height:420px; overflow-y:auto; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="brand">
+    <div class="mark">CWI</div>
+    <div>
+      <h1 data-i18n="app.title">Skill Sentinel</h1>
+      <p class="sub" data-i18n="app.tagline">Linter + security scanner for AI agent skills — by Cumulative Web Inc</p>
+    </div>
+  </header>
+
+  <div class="hero">
+    <label for="src" data-i18n="scan.label"><b>Paste a SKILL.md, AGENTS.md, or subagent file</b></label>
+    <textarea id="src" data-i18n-ph="scan.placeholder" placeholder="---&#10;name: my-skill&#10;description: What it does and when to use it.&#10;---&#10;&#10;# My Skill&#10;&#10;Instructions…"></textarea>
+    <div class="row">
+      <button id="scanbtn" data-i18n="scan.button">Scan skill</button>
+      <button id="cleanbtn" class="ghost small" data-i18n="scan.load_clean">Load clean sample</button>
+      <button id="evilbtn" class="ghost small" data-i18n="scan.load_malicious">Load malicious sample</button>
+      <button id="filebtn" class="ghost small" data-i18n="scan.load_file">Open file…</button>
+      <input type="file" id="filein" accept=".md,.txt" style="display:none">
+    </div>
+    <div class="drop" data-i18n="scan.privacy">Runs 100% in your browser. Nothing is uploaded, stored, or sent anywhere.</div>
+  </div>
+
+  <div id="results"></div>
+
+  <div class="honest">
+    <b data-i18n="honest.title">Honest limits.</b>
+    <span data-i18n="honest.body">Skill Sentinel is a heuristic pattern engine — a fast first line of defense and CI gate, not a sandbox or a guarantee. It has false positives (a legit skill documenting <code>curl</code>) and false negatives (novel obfuscation). A clean scan is not a safety certificate. Always read a skill before trusting it.</span>
+  </div>
+
+  <footer>
+    <span data-i18n="footer.built">Built by</span> <b>Cumulative Web Inc</b> ·
+    <a href="./schema/findings.schema.json" data-i18n="footer.schema">Machine-readable findings schema (for agents)</a> ·
+    <a href="https://github.com/CumulativeWebInc/cwi-skill-sentinel">GitHub</a>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var src = $('src'), results = $('results'), scanbtn = $('scanbtn');
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function render(report) {
+    var gradeCls = 'g' + report.grade;
+    var chips = ['critical', 'error', 'warning', 'info'].map(function (s) {
+      return '<span class="chip">' + s + ': ' + report.summary[s] + '</span>';
+    }).join('');
+    var html = '<div class="grade-card"><div class="grade-letter ' + gradeCls + '">' + report.grade +
+      '</div><div style="flex:1"><div><b>Score ' + report.score + '/100</b> · ' + esc(report.filename) +
+      ' · engine v' + esc(report.engine_version) + '</div>' +
+      '<div class="scorebar"><div style="width:' + report.score + '%"></div></div>' +
+      '<div class="chips">' + chips + '</div></div></div>';
+    html += '<div class="row" style="margin-top:12px">' +
+      '<button class="ghost small" id="copyjson">Copy findings JSON</button>' +
+      '<button class="ghost small" id="dljson">Download report</button>' +
+      '<button class="ghost small" id="viewjson">View JSON</button></div>';
+    html += '<pre id="jsonout"></pre>';
+    if (!report.findings.length) {
+      html += '<div class="empty-ok"><b style="font-size:20px">✓ Clean scan</b>' +
+        '<p style="color:var(--mut)">No findings. Remember: a clean scan is not a safety certificate — ' +
+        'always read a skill before trusting it.</p></div>';
+    } else {
+      report.findings.forEach(function (f) {
+        html += '<div class="finding f-' + f.severity + '">' +
+          '<div class="fhead"><span class="sev ' + f.severity + '">' + f.severity + '</span>' +
+          '<span class="fid">' + esc(f.id) + '</span>' +
+          '<span class="ftitle">' + esc(f.title) + '</span>' +
+          '<span class="fline">line ' + f.line + '</span></div>' +
+          (f.match ? '<div class="fmatch">' + esc(f.match) + '</div>' : '') +
+          '<div>' + esc(f.message) + '</div>' +
+          '<div class="ffix"><b>Fix:</b> ' + esc(f.fix) + '</div></div>';
+      });
+    }
+    results.innerHTML = html;
+    results.style.display = 'block';
+    results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    var payload = JSON.stringify(report, null, 2);
+    $('copyjson').onclick = function () {
+      (navigator.clipboard ? navigator.clipboard.writeText(payload) : Promise.reject())
+        .then(function () { $('copyjson').textContent = 'Copied ✓'; })
+        .catch(function () { $('copyjson').textContent = 'Copy failed — use View JSON'; });
+    };
+    $('dljson').onclick = function () {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([payload], { type: 'application/json' }));
+      a.download = 'skill-sentinel-report.json';
+      a.click();
+    };
+    $('viewjson').onclick = function () {
+      var pre = $('jsonout');
+      pre.style.display = pre.style.display === 'block' ? 'none' : 'block';
+      pre.textContent = payload;
+    };
+  }
+
+  function doScan() {
+    var text = src.value;
+    var report = SkillSentinel.scan(text, { filename: 'pasted-skill.md' });
+    render(report);
+  }
+
+  scanbtn.onclick = doScan;
+  $('cleanbtn').onclick = function () {
+    fetch('./tests/fixtures/clean-skill.md').then(function (r) { return r.text(); })
+      .then(function (t) { src.value = t; doScan(); });
+  };
+  $('evilbtn').onclick = function () {
+    fetch('./tests/fixtures/malicious-skill.md').then(function (r) { return r.text(); })
+      .then(function (t) { src.value = t; doScan(); });
+  };
+  $('filebtn').onclick = function () { $('filein').click(); };
+  $('filein').onchange = function (e) {
+    var f = e.target.files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () { src.value = rd.result; doScan(); };
+    rd.readAsText(f);
+  };
+
+  // ?scan=<url> deep link: fetch a remote skill file and scan it
+  try {
+    var q = new URLSearchParams(location.search).get('scan');
+    if (q) fetch(q).then(function (r) { return r.text(); })
+      .then(function (t) { src.value = t; doScan(); })
+      .catch(function () {});
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>
