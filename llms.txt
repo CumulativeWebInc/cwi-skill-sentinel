@@ -1,0 +1,25 @@
+# Skill Sentinel
+> Linter + security scanner for AI agent skills — paste a SKILL.md, get an A–F grade with evidence-bound findings. 100% local, nothing uploaded.
+
+Heuristic pattern engine that grades AI agent skills A–F across six categories: prompt injection, data exfiltration, destructive commands, privilege grants, frontmatter lint, structure. Runs 100% locally in the browser.
+
+## Live
+- App: https://cumulativewebinc.github.io/cwi-skill-sentinel/
+- Try it: https://cumulativewebinc.github.io/cwi-skill-sentinel/
+
+## Features
+- A–F grades with evidence-bound findings
+- 6 finding categories (SEC-PI/EX/DE/PR, Q-FM/ST)
+- ?scan=<url-to-raw-skill-file> deep links
+- Zero-dependency UMD scanner.js (browser + Node)
+- Machine-readable findings schema
+- 27/27 tests
+
+## Machine-readable
+- schema: https://cumulativewebinc.github.io/cwi-skill-sentinel/schema/findings.schema.json
+
+## Honest limits
+Heuristic, not a sandbox: false positives and false negatives exist. A clean scan is NOT a safety certificate — always read a skill before trusting it.
+
+## Provider
+Cumulative Web Inc — hp@cumulativeweb.com

@@ -1,0 +1,26 @@
+{
+  "name": "Skill Sentinel",
+  "title": "Skill Sentinel",
+  "url": "https://cumulativewebinc.github.io/cwi-skill-sentinel/",
+  "description": "Linter + security scanner for AI agent skills \u2014 paste a SKILL.md, get an A\u2013F grade with evidence-bound findings. 100% local, nothing uploaded.",
+  "version": "1.0.0",
+  "provider": {
+    "name": "Cumulative Web Inc",
+    "url": "https://cumulativeweb.com",
+    "contact": "hp@cumulativeweb.com"
+  },
+  "auth": "none",
+  "pricing": "free",
+  "capabilities": [
+    "A\u2013F grades with evidence-bound findings",
+    "6 finding categories (SEC-PI/EX/DE/PR, Q-FM/ST)",
+    "?scan=<url-to-raw-skill-file> deep links",
+    "Zero-dependency UMD scanner.js (browser + Node)",
+    "Machine-readable findings schema",
+    "27/27 tests"
+  ],
+  "honest_limits": "Heuristic, not a sandbox: false positives and false negatives exist. A clean scan is NOT a safety certificate \u2014 always read a skill before trusting it.",
+  "machine_interfaces": {
+    "schema": "https://cumulativewebinc.github.io/cwi-skill-sentinel/schema/findings.schema.json"
+  }
+}
