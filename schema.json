@@ -10,5 +10,6 @@
     "name": "Cumulative Web Inc",
     "url": "https://cumulativeweb.com/"
   },
-  "description": "Skill linter and security scanner for SKILL.md/AGENTS.md files with A-F grades and machine-readable findings."
+  "description": "Skill linter and security scanner for SKILL.md/AGENTS.md files with A-F grades and machine-readable findings.",
+  "schema_version": "1.0.0"
 }
