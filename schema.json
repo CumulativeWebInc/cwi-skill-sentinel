@@ -1,0 +1,14 @@
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Skill Sentinel (#30)",
+  "url": "https://cumulativewebinc.github.io/cwi-skill-sentinel/",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Web",
+  "author": {
+    "@type": "Organization",
+    "name": "Cumulative Web Inc",
+    "url": "https://cumulativeweb.com/"
+  },
+  "description": "Skill linter and security scanner for SKILL.md/AGENTS.md files with A-F grades and machine-readable findings."
+}
